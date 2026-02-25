@@ -723,7 +723,13 @@ async function init() {
     document.getElementById('patientMRN').textContent = '--';
     document.getElementById('studyDate').textContent = '--';
     const sidebar = document.getElementById('studyList') || document.querySelector('.series-list');
-    if (sidebar) sidebar.innerHTML = `<div style="padding:16px;color:var(--warning);font-size:13px">${err.message}</div>`;
+    if (sidebar) {
+      sidebar.textContent = '';
+      const errDiv = document.createElement('div');
+      errDiv.style.cssText = 'padding:16px;color:var(--warning);font-size:13px';
+      errDiv.textContent = err.message;
+      sidebar.appendChild(errDiv);
+    }
     return;
   }
 
@@ -765,30 +771,48 @@ function renderStudyList() {
   container.innerHTML = '';
 
   data.studies.forEach((study, si) => {
-    const mod = study.modality.toLowerCase();
+    const mod = escapeHtml(study.modality.toLowerCase());
+    const modality = escapeHtml(study.modality);
     const totalSlices = study.series.reduce((sum, s) => sum + s.sliceCount, 0);
+    const studyLabel = study.modality === 'MR' ? 'Brain MRI' : study.modality === 'CT' ? 'Brain CT' : escapeHtml(study.description);
+
     const group = document.createElement('div');
     group.className = 'study-group';
-    group.innerHTML = `
-      <div class="study-header" onclick="toggleStudy(this)">
-        <div class="study-header-left">
-          <div class="study-icon ${mod}">${study.modality}</div>
-          <span class="study-name">${study.modality === 'MR' ? 'Brain MRI' : study.modality === 'CT' ? 'Brain CT' : study.description}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span class="study-count">${totalSlices}</span>
-          <span class="study-chevron">&#9654;</span>
-        </div>
+
+    const header = document.createElement('div');
+    header.className = 'study-header';
+    header.onclick = function() { toggleStudy(this); };
+    header.innerHTML = `
+      <div class="study-header-left">
+        <div class="study-icon ${mod}">${modality}</div>
+        <span class="study-name">${studyLabel}</span>
       </div>
-      <div class="series-list">
-        ${study.series.map((series, sei) => `
-          <div class="series-item" data-study="${si}" data-series="${sei}" onclick="selectSeries(${si}, ${sei})">
-            <span>${series.description || 'Series ' + series.number}</span>
-            <span class="series-count">${series.sliceCount}</span>
-          </div>
-        `).join('')}
-      </div>
-    `;
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="study-count">${totalSlices}</span>
+        <span class="study-chevron">&#9654;</span>
+      </div>`;
+    group.appendChild(header);
+
+    const seriesList = document.createElement('div');
+    seriesList.className = 'series-list';
+    study.series.forEach((series, sei) => {
+      const item = document.createElement('div');
+      item.className = 'series-item';
+      item.dataset.study = si;
+      item.dataset.series = sei;
+      item.onclick = function() { selectSeries(si, sei); };
+
+      const label = document.createElement('span');
+      label.textContent = series.description || 'Series ' + series.number;
+      const count = document.createElement('span');
+      count.className = 'series-count';
+      count.textContent = series.sliceCount;
+
+      item.appendChild(label);
+      item.appendChild(count);
+      seriesList.appendChild(item);
+    });
+    group.appendChild(seriesList);
     container.appendChild(group);
   });
 }
@@ -816,7 +840,10 @@ function selectStudy(studyIndex) {
   data.studies.forEach(study => {
     study.series.forEach(series => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${study.modality}</td><td>${series.description}</td><td class="num">${series.sliceCount}</td>`;
+      const tdMod = document.createElement('td'); tdMod.textContent = study.modality;
+      const tdDesc = document.createElement('td'); tdDesc.textContent = series.description;
+      const tdCount = document.createElement('td'); tdCount.className = 'num'; tdCount.textContent = series.sliceCount;
+      tr.appendChild(tdMod); tr.appendChild(tdDesc); tr.appendChild(tdCount);
       tbody.appendChild(tr);
     });
   });
@@ -856,12 +883,20 @@ function showSlice(index) {
   img.style.display = 'block';
   if (emptyState) emptyState.style.display = 'none';
 
-  document.getElementById('sliceIndicator').innerHTML =
-    `<strong>${index + 1}</strong> / ${currentSeries.sliceCount}`;
+  const indicator = document.getElementById('sliceIndicator');
+  indicator.textContent = '';
+  const strong = document.createElement('strong');
+  strong.textContent = index + 1;
+  indicator.appendChild(strong);
+  indicator.appendChild(document.createTextNode(' / ' + currentSeries.sliceCount));
+
   document.getElementById('overlayTL').textContent =
-    `${currentStudy.modality === 'MR' ? 'Brain MRI' : currentStudy.description}`;
-  document.getElementById('overlayTR').innerHTML =
-    `${index + 1}/${currentSeries.sliceCount}<br>${currentSeries.description}`;
+    currentStudy.modality === 'MR' ? 'Brain MRI' : currentStudy.description;
+  const overlayTR = document.getElementById('overlayTR');
+  overlayTR.textContent = '';
+  overlayTR.appendChild(document.createTextNode((index + 1) + '/' + currentSeries.sliceCount));
+  overlayTR.appendChild(document.createElement('br'));
+  overlayTR.appendChild(document.createTextNode(currentSeries.description));
   applyFilters();
 }
 
@@ -1115,6 +1150,10 @@ function findSeriesImage(study, match, sliceIdx) {
 function generateExport() {
   closeExportModal();
   const win = window.open('', '_blank');
+  if (!win || win.closed) {
+    alert('Popup blocked — please allow popups for this site and try again.');
+    return;
+  }
   const p = data.patient;
   const displayName = formatDicomName(p.name);
   const studyDate = data.studies.length > 0 ? formatDateLong(data.studies[0].date) : '--';
