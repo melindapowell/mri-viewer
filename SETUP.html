@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRI DICOM Viewer — Setup Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #004c97;
+    --blue-light: rgba(0,76,151,0.06);
+    --blue-border: rgba(0,76,151,0.15);
+    --text: #1a1a1a;
+    --text-secondary: #555;
+    --text-muted: #888;
+    --border: #e2e5ea;
+    --bg: #fff;
+    --bg-code: #f5f7fa;
+    --bg-warn: #fff8f0;
+    --warn-border: #f0c050;
+    --success: #1a8754;
+    --success-bg: #f0faf5;
+    --success-border: rgba(26,135,84,0.2);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    font-optical-sizing: auto;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 2px solid var(--blue);
+  }
+  .header-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--blue);
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .header p {
+    color: var(--text-secondary);
+    font-size: 15px;
+    max-width: 560px;
+  }
+
+  /* Sections */
+  h2 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--blue);
+    margin-top: 48px;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 650;
+    margin-top: 32px;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  p { margin-bottom: 14px; }
+
+  /* Steps */
+  .step {
+    margin-bottom: 36px;
+    padding-left: 36px;
+    position: relative;
+  }
+  .step::before {
+    content: attr(data-step);
+    position: absolute;
+    left: 0;
+    top: 1px;
+    width: 24px;
+    height: 24px;
+    background: var(--blue);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .step-title {
+    font-size: 15px;
+    font-weight: 650;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .step p, .step ul {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  /* Code blocks */
+  pre {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 12px 0 16px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--bg-code);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    border: none;
+    font-size: inherit;
+  }
+
+  /* Comment lines in code */
+  .c { color: #888; }
+  .cmd { color: var(--blue); font-weight: 500; }
+
+  /* Callout boxes */
+  .callout {
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  .callout-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .callout.info {
+    background: var(--blue-light);
+    border: 1px solid var(--blue-border);
+  }
+  .callout.info .callout-label { color: var(--blue); }
+  .callout.warn {
+    background: var(--bg-warn);
+    border: 1px solid var(--warn-border);
+  }
+  .callout.warn .callout-label { color: #b87a00; }
+  .callout.success {
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+  }
+  .callout.success .callout-label { color: var(--success); }
+
+  /* LLM prompt blocks */
+  .llm-prompt {
+    background: #f9f5ff;
+    border: 1px solid #e4d5f7;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    position: relative;
+  }
+  .llm-prompt::before {
+    content: 'PASTE INTO CLAUDE OR CODEX';
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #7c3aed;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .llm-prompt p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #4a2b7a;
+    margin-bottom: 0;
+    font-style: italic;
+  }
+
+  /* Checklist */
+  .checklist {
+    list-style: none;
+    margin: 12px 0;
+  }
+  .checklist li {
+    padding: 6px 0 6px 28px;
+    position: relative;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .checklist li::before {
+    content: '☐';
+    position: absolute;
+    left: 0;
+    font-size: 16px;
+    color: var(--text-muted);
+  }
+
+  /* Directory tree */
+  .tree {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 12px 0 16px;
+    color: var(--text-secondary);
+  }
+  .tree .highlight { color: var(--blue); font-weight: 500; }
+  .tree .muted { color: #aaa; }
+
+  /* Horizontal rule */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  /* Links */
+  a {
+    color: var(--blue);
+    text-decoration: none;
+    border-bottom: 1px solid var(--blue-border);
+  }
+  a:hover { border-bottom-color: var(--blue); }
+
+  /* Lists */
+  ul, ol {
+    margin: 8px 0 14px;
+    padding-left: 20px;
+  }
+  li { margin-bottom: 4px; }
+
+  /* Print */
+  @media print {
+    body { max-width: 100%; padding: 24px; font-size: 12px; }
+    pre { font-size: 11px; }
+    .llm-prompt { break-inside: avoid; }
+    .step { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Setup Guide</div>
+  <h1>MRI DICOM Viewer</h1>
+  <p>A local web application for viewing DICOM medical images recovered from DVD. This guide walks through installation, preprocessing, and running the viewer.</p>
+</div>
+
+<!-- ============================================ -->
+<h2>What You Need</h2>
+
+<div class="callout info">
+  <div class="callout-label">Before you start</div>
+  This viewer runs entirely on your local machine. No data is sent anywhere. You'll need a terminal (Terminal.app on Mac, PowerShell on Windows) and about 10 minutes.
+</div>
+
+<ul class="checklist">
+  <li>A computer running macOS, Windows, or Linux</li>
+  <li>The recovered DICOM files (the folder containing <code>DICOM/</code>, <code>REPORTS/</code>, and <code>DICOMDIR</code>)</li>
+  <li><strong>Node.js</strong> (version 18 or later) — runs the viewer server</li>
+  <li><strong>Python 3</strong> (version 3.8 or later) — converts DICOM files to viewable images</li>
+  <li>Three Python packages: <code>pydicom</code>, <code>Pillow</code>, <code>numpy</code></li>
+</ul>
+
+<!-- ============================================ -->
+<h2>Directory Layout</h2>
+
+<p>The viewer expects this folder structure. The <code>viewer/</code> folder should sit alongside the <code>DICOM/</code> and <code>REPORTS/</code> directories from your recovered DVD:</p>
+
+<div class="tree">
+your-recovery-folder/
+├── <span class="highlight">DICOM/</span>           ← recovered DICOM files from DVD
+├── <span class="highlight">REPORTS/</span>         ← radiology report text files from DVD
+├── DICOMDIR            ← DICOM directory index from DVD
+└── <span class="highlight">viewer/</span>          ← this application
+    ├── index.html       ← viewer interface
+    ├── server.js        ← local web server
+    ├── preprocess.py    ← DICOM → PNG converter
+    ├── package.json     ← Node.js dependencies
+    ├── utsw-logo.svg    <span class="muted">← optional institution logo</span>
+    └── processed/       <span class="muted">← created by preprocess.py</span>
+</div>
+
+<!-- ============================================ -->
+<h2>Installation</h2>
+
+<div class="step" data-step="1">
+  <div class="step-title">Install Node.js</div>
+  <p>Check if you already have it:</p>
+  <pre><code>node --version</code></pre>
+  <p>If you see <code>v18.x.x</code> or higher, skip to Step 2. Otherwise:</p>
+  <ul>
+    <li><strong>Mac:</strong> <code>brew install node</code> (if you have Homebrew) or download from <a href="https://nodejs.org">nodejs.org</a></li>
+    <li><strong>Windows:</strong> Download the installer from <a href="https://nodejs.org">nodejs.org</a></li>
+  </ul>
+
+  <div class="llm-prompt">
+    <p>I need to install Node.js on my computer. I'm on [Mac/Windows/Linux]. Can you walk me through it step by step? I need version 18 or later.</p>
+  </div>
+</div>
+
+<div class="step" data-step="2">
+  <div class="step-title">Install Python 3</div>
+  <p>Check if you already have it:</p>
+  <pre><code>python3 --version</code></pre>
+  <p>If you see <code>Python 3.8</code> or higher, skip to Step 3. Otherwise:</p>
+  <ul>
+    <li><strong>Mac:</strong> <code>brew install python</code> or download from <a href="https://python.org">python.org</a></li>
+    <li><strong>Windows:</strong> Download from <a href="https://python.org">python.org</a> — check "Add to PATH" during install</li>
+  </ul>
+
+  <div class="llm-prompt">
+    <p>I need to install Python 3 on my [Mac/Windows/Linux]. Can you help me install it and make sure it's available from my terminal?</p>
+  </div>
+</div>
+
+<div class="step" data-step="3">
+  <div class="step-title">Install Python packages</div>
+  <p>These are needed to read DICOM medical image files and convert them to standard PNG images:</p>
+  <pre><code>pip3 install pydicom Pillow numpy</code></pre>
+  <p>If <code>pip3</code> isn't found, try <code>pip install pydicom Pillow numpy</code> or <code>python3 -m pip install pydicom Pillow numpy</code>.</p>
+</div>
+
+<div class="step" data-step="4">
+  <div class="step-title">Install Node.js dependencies</div>
+  <p>Open a terminal, navigate to the <code>viewer/</code> folder, and run:</p>
+  <pre><code><span class="c"># Navigate to the viewer folder</span>
+cd path/to/your-recovery-folder/viewer
+
+<span class="c"># Install the Express web server</span>
+npm install</code></pre>
+  <p>This reads <code>package.json</code> and installs Express (the local web server). You'll see a <code>node_modules/</code> folder appear.</p>
+</div>
+
+<!-- ============================================ -->
+<h2>Preprocessing</h2>
+
+<div class="callout warn">
+  <div class="callout-label">One-time step</div>
+  This converts your raw DICOM files into viewable PNG images. It only needs to run once and takes 1–3 minutes depending on your computer. It does not modify the original DICOM files.
+</div>
+
+<div class="step" data-step="5">
+  <div class="step-title">Run the preprocessor</div>
+  <p>From the <code>viewer/</code> folder:</p>
+  <pre><code>python3 preprocess.py</code></pre>
+  <p>You'll see progress output as it processes each DICOM file. When done, it will report how many images were converted and create a <code>processed/</code> folder containing:</p>
+  <ul>
+    <li><code>metadata.json</code> — study and patient information</li>
+    <li>Organized PNG folders by study and series</li>
+  </ul>
+
+  <div class="callout info">
+    <div class="callout-label">Expected output</div>
+    The preprocessor will skip any corrupted or zeroed-out files from the DVD recovery and report them. This is normal — it processes what's readable and skips the rest.
+  </div>
+</div>
+
+<!-- ============================================ -->
+<h2>Running the Viewer</h2>
+
+<div class="step" data-step="6">
+  <div class="step-title">Start the server</div>
+  <p>From the <code>viewer/</code> folder:</p>
+  <pre><code>node server.js</code></pre>
+  <p>You should see:</p>
+  <pre><code>MRI Viewer running at http://localhost:8080</code></pre>
+</div>
+
+<div class="step" data-step="7">
+  <div class="step-title">Open in your browser</div>
+  <p>Open <a href="http://localhost:8080">http://localhost:8080</a> in Chrome, Firefox, Safari, or Edge.</p>
+  <p>You should see the viewer with your studies listed in the left sidebar. Click a series to view images, use the slider to navigate slices, and adjust brightness/contrast as needed.</p>
+</div>
+
+<div class="callout success">
+  <div class="callout-label">You're done</div>
+  The viewer is now running. To stop it, press <code>Ctrl+C</code> in the terminal. To start it again later, just repeat Step 6 — you don't need to re-run the preprocessor.
+</div>
+
+<!-- ============================================ -->
+<h2>Customization</h2>
+
+<h3>Institution logo</h3>
+<p>To add your institution's logo, place an SVG file named <code>utsw-logo.svg</code> in the <code>viewer/</code> folder. It will appear in the top-left of both the viewer and exported reports. If no logo file is present, a text fallback is shown automatically.</p>
+
+<!-- ============================================ -->
+<h2>Exporting for Insurance</h2>
+
+<p>The viewer includes an <strong>Export for Insurance</strong> button (top right) that generates a print-ready medical imaging report with:</p>
+<ul>
+  <li>Patient demographics and study information</li>
+  <li>Representative images from each study</li>
+  <li>Complete radiology reports (verbatim from the DVD)</li>
+  <li>Additional imaging gallery</li>
+</ul>
+<p>Click the button, then <strong>Generate &amp; Print</strong>. A new tab opens with the formatted report. Use your browser's <strong>Print → Save as PDF</strong> (or the "Save as PDF" button at the bottom) to create a PDF document for your claim.</p>
+
+<!-- ============================================ -->
+<h2>Troubleshooting</h2>
+
+<h3><code>command not found: node</code></h3>
+<p>Node.js isn't installed or isn't in your PATH. Revisit Step 1.</p>
+
+<h3><code>command not found: python3</code></h3>
+<p>Try <code>python --version</code> instead. On Windows, Python 3 is sometimes just <code>python</code>. If neither works, revisit Step 2.</p>
+
+<h3><code>ModuleNotFoundError: No module named 'pydicom'</code></h3>
+<p>The Python packages aren't installed. Run Step 3 again. If you have multiple Python versions, make sure you're using the same one: <code>python3 -m pip install pydicom Pillow numpy</code>.</p>
+
+<h3><code>EADDRINUSE: port 8080</code></h3>
+<p>Something else is using port 8080. Either stop that process or edit <code>server.js</code> and change the <code>PORT</code> number (e.g., to <code>3000</code>).</p>
+
+<h3>Images are black or missing</h3>
+<p>The preprocessor may not have run successfully. Check that <code>viewer/processed/</code> exists and contains PNG files. Re-run <code>python3 preprocess.py</code> and check for error messages.</p>
+
+<h3>Browser shows "Cannot GET /"</h3>
+<p>Make sure you're running <code>node server.js</code> from inside the <code>viewer/</code> directory, not from a parent folder.</p>
+
+<div class="llm-prompt">
+  <p>I'm trying to set up an MRI DICOM viewer. I'm getting this error: [paste the error message here]. I'm on [Mac/Windows]. The viewer folder is at [paste your path]. Can you help me fix this?</p>
+</div>
+
+<!-- ============================================ -->
+<h2>Quick Reference</h2>
+
+<pre><code><span class="c"># First time only</span>
+cd path/to/your-recovery-folder/viewer
+pip3 install pydicom Pillow numpy
+npm install
+python3 preprocess.py
+
+<span class="c"># Every time you want to view</span>
+cd path/to/your-recovery-folder/viewer
+node server.js
+<span class="c"># Then open http://localhost:8080 in your browser</span>
+<span class="c"># Press Ctrl+C in terminal to stop</span></code></pre>
+
+<!-- ============================================ -->
+<div class="footer">
+  MRI DICOM Viewer &middot; For local use only &middot; No data leaves your computer
+</div>
+
+</body>
+</html>

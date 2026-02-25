@@ -1,0 +1,11 @@
+node_modules/
+processed/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Version backups (development only)
+index.v*.html
+
+# Institution logo (replace with your own)
+utsw-logo.svg
