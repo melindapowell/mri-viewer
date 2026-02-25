@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MRI DICOM Viewer — Setup Guide</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --blue: #004c97;
@@ -28,7 +25,7 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-optical-sizing: auto;
     font-size: 15px;
     line-height: 1.7;
@@ -47,7 +44,7 @@
     border-bottom: 2px solid var(--blue);
   }
   .header-eyebrow {
-    font-family: 'DM Sans', sans-serif;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
@@ -106,7 +103,7 @@
     height: 24px;
     background: var(--blue);
     color: #fff;
-    font-family: 'DM Sans', sans-serif;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-size: 12px;
     font-weight: 700;
     border-radius: 50%;
@@ -134,13 +131,13 @@
     padding: 16px 20px;
     margin: 12px 0 16px;
     overflow-x: auto;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 13px;
     line-height: 1.6;
     color: var(--text);
   }
   code {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 13px;
     background: var(--bg-code);
     padding: 2px 6px;
@@ -167,7 +164,7 @@
     line-height: 1.65;
   }
   .callout-label {
-    font-family: 'DM Sans', sans-serif;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
@@ -201,7 +198,7 @@
   }
   .llm-prompt::before {
     content: 'PASTE INTO CLAUDE OR CODEX';
-    font-family: 'DM Sans', sans-serif;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 1.2px;
@@ -238,7 +235,7 @@
 
   /* Directory tree */
   .tree {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 12.5px;
     line-height: 1.7;
     background: var(--bg-code);

@@ -8,6 +8,7 @@ import os
 import sys
 import json
 import hashlib
+import datetime
 from pathlib import Path
 from collections import defaultdict
 
@@ -23,8 +24,12 @@ OUTPUT_DIR = Path(__file__).parent / "processed"
 
 def apply_windowing(pixel_array, window_center, window_width):
     """Apply DICOM windowing to pixel data."""
+    if window_width <= 0:
+        raise ValueError(f"window_width must be > 0, got {window_width}")
     img_min = window_center - window_width / 2
     img_max = window_center + window_width / 2
+    if img_max - img_min <= 0:
+        raise ValueError(f"Invalid window parameters: center={window_center}, width={window_width}")
     windowed = np.clip(pixel_array, img_min, img_max)
     windowed = ((windowed - img_min) / (img_max - img_min) * 255).astype(np.uint8)
     return windowed
@@ -48,6 +53,22 @@ def safe_str(val):
     if s in ("None", ""):
         return ""
     return s
+
+
+def safe_int(val, default=0):
+    """Safely cast a DICOM value to int, returning default on failure."""
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return default
+
+
+def safe_float(val, default=0.0):
+    """Safely cast a DICOM value to float, returning default on failure."""
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return default
 
 
 def process_dicom_file(filepath):
@@ -103,18 +124,18 @@ def process_dicom_file(filepath):
         "studyInstanceUID": safe_str(getattr(ds, "StudyInstanceUID", "")),
         "seriesDescription": safe_str(getattr(ds, "SeriesDescription", "")),
         "seriesInstanceUID": safe_str(getattr(ds, "SeriesInstanceUID", "")),
-        "seriesNumber": int(getattr(ds, "SeriesNumber", 0)),
-        "instanceNumber": int(getattr(ds, "InstanceNumber", 0)),
+        "seriesNumber": safe_int(getattr(ds, "SeriesNumber", 0)),
+        "instanceNumber": safe_int(getattr(ds, "InstanceNumber", 0)),
         "modality": modality,
         "institution": safe_str(getattr(ds, "InstitutionName", "")),
         "referringPhysician": safe_str(getattr(ds, "ReferringPhysicianName", "")),
         "accession": safe_str(getattr(ds, "AccessionNumber", "")),
         "bodyPart": safe_str(getattr(ds, "BodyPartExamined", "")),
-        "rows": int(getattr(ds, "Rows", 0)),
-        "columns": int(getattr(ds, "Columns", 0)),
+        "rows": safe_int(getattr(ds, "Rows", 0)),
+        "columns": safe_int(getattr(ds, "Columns", 0)),
         "windowCenter": wc,
         "windowWidth": ww,
-        "sliceLocation": float(ds.SliceLocation) if hasattr(ds, "SliceLocation") and ds.SliceLocation is not None else 0.0,
+        "sliceLocation": safe_float(getattr(ds, "SliceLocation", 0.0) if hasattr(ds, "SliceLocation") else 0.0),
     }
 
     return (metadata, img_data), None
@@ -202,7 +223,8 @@ def main():
         first_meta = next(iter(next(iter(series_dict.values()))))[0]
         modality = first_meta["modality"]
         study_desc = first_meta["studyDescription"]
-        study_dir_name = f"{modality}_{study_desc}".replace(" ", "_").replace("/", "-")[:50]
+        uid_suffix = hashlib.md5(study_uid.encode()).hexdigest()[:8]
+        study_dir_name = f"{modality}_{study_desc}_{uid_suffix}".replace(" ", "_").replace("/", "-")[:58]
 
         study_info = {
             "uid": study_uid,
@@ -265,7 +287,7 @@ def main():
             "intactFiles": len(dicom_files) - skipped - errors,
             "damagedFiles": skipped,
             "errorFiles": errors,
-            "recoveryDate": "2026-02-24",
+            "recoveryDate": datetime.date.today().isoformat(),
             "sourceMedia": "DVD-R from UT Southwestern Medical Center",
         },
     }
